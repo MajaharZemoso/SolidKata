@@ -4,7 +4,7 @@ import tddmicroexercises.telemetrysystem.IClientConnection;
 
 import java.util.Random;
 
-public class ClientConnection implements IClientConnection {
+public class TelemetryClientConnection implements IClientConnection {
 	
 	private boolean onlineStatus;
 	
