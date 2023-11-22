@@ -1,33 +1,18 @@
 package org.example;
 
-import org.example.Controller.TogglingLights;
-import org.example.Controller.TurnLightsOff;
-import org.example.Controller.TurnLightsOn;
-import org.example.ControllerImpl.*;
-import org.example.DataItems.Lights;
-import org.example.DataItems.Points;
-import org.example.LightningPattern.Lightning;
-import org.example.LightningPattern.LightningWithBrightness;
+import org.example.Controller.LightingController;
+import org.example.ControllerImpl.LightsBrightnessController;
+import org.example.ControllerImpl.LightsSwitchController;
+import org.example.LightGrid.LightGrid;
+import org.example.Entities.Point;
 
 public class Main {
     public static void main(String[] args) {
-        Lights lights = new Lights();
+        LightGrid lightGrid = new LightGrid(1000, 1000);
+        LightGrid lightGrid1 = new LightGrid(1000,1000);
         
-        lights.setLightsDefaultValue();
-        
-        //Commented Part 1 implementation
-
-        TurnLightsOn onController = new LightsOnController(lights);
-        TurnLightsOff offController = new LightsOffController(lights);
-        TogglingLights toggleController = new LightsTogglingController(lights);
-
-        Lightning finalLightning = new Lightning();
-        
-        //TurnLightsOn brightnessOnController = new LightsBrightnessOnController(lights);
-        //TurnLightsOff brightnessOffController = new LightsBrightnessOffController(lights);
-        //TogglingLights brightnessToggleController =  new LightsBrightnessTogglingController(lights);
-        
-        LightningWithBrightness lightningWithBrightness = new LightningWithBrightness();
+        LightingController lightsSwitchController = new LightsSwitchController(lightGrid);
+        LightingController lightsBrightnessController = new LightsBrightnessController(lightGrid1);
         
         // Process the instructions
         String[] instructions = {
@@ -44,53 +29,46 @@ public class Main {
         
         for (String instruction : instructions) {
             String[] parts = instruction.split(" ");
-            if (parts[0].equals("turn")) {
-                if (parts[1].equals("on")) {
-                    String[] startCords = parts[2].split(",");
-                    String[] endCords = parts[4].split(",");
-                    int startX = Integer.parseInt(startCords[0]);
-                    int startY = Integer.parseInt(startCords[1]);
-                    int endX = Integer.parseInt(endCords[0]);
-                    int endY = Integer.parseInt(endCords[1]);
-                    
-                    Points startingPoint = new Points(startX, startY);
-                    Points endingPoint = new Points(endX, endY);
-                    
-                    onController.performOnOperation(startingPoint, endingPoint, lights.getLightGrids());
-                    //brightnessOnController.performOnOperation(startingPoint, endingPoint, lights.getLightGrids());
-                } else if (parts[1].equals("off")) {
-                    
-                    String[] startCords = parts[2].split(",");
-                    String[] endCords = parts[4].split(",");
-                    int startX = Integer.parseInt(startCords[0]);
-                    int startY = Integer.parseInt(startCords[1]);
-                    int endX = Integer.parseInt(endCords[0]);
-                    int endY = Integer.parseInt(endCords[1]);
-                    
-                    Points startingPoint = new Points(startX, startY);
-                    Points endingPoint = new Points(endX, endY);
-                    
-                    offController.performLightOffOperation(startingPoint, endingPoint, lights.getLightGrids());
-                    //brightnessOffController.performLightOffOperation(startingPoint, endingPoint, lights.getLightGrids());
-                }
-            } else if (parts[0].equals("toggle")) {
-                String[] startCords = parts[1].split(",");
-                String[] endCords = parts[3].split(",");
-                int startX = Integer.parseInt(startCords[0]);
-                int startY = Integer.parseInt(startCords[1]);
-                int endX = Integer.parseInt(endCords[0]);
-                int endY = Integer.parseInt(endCords[1]);
-                
-                Points startingPoint = new Points(startX, startY);
-                Points endingPoint = new Points(endX, endY);
-                
-                toggleController.performToggleOperation(startingPoint, endingPoint, lights.getLightGrids());
-                //brightnessToggleController.performToggleOperation(startingPoint, endingPoint, lights.getLightGrids());
-                
+            String operationType = parts[0];
+            String operation;
+            String[] startCoords;
+            String[] endCoords;
+            if (operationType.equals("turn")) {
+                operation = parts[1];
+                startCoords = parts[2].split(",");
+                endCoords = parts[4].split(",");
+            } else {
+                operation = parts[0];
+                startCoords = parts[1].split(",");
+                endCoords = parts[3].split(",");
+            }
+            
+            int startX = Integer.parseInt(startCoords[0]);
+            int startY = Integer.parseInt(startCoords[1]);
+            int endX = Integer.parseInt(endCoords[0]);
+            int endY = Integer.parseInt(endCoords[1]);
+            
+            Point startingPoint = new Point(startX, startY);
+            Point endingPoint = new Point(endX, endY);
+            
+            switch (operationType) {
+                case "turn":
+                    if (operation.equals("on")) {
+                        lightsSwitchController.performTurnOn(startingPoint, endingPoint);
+                        lightsBrightnessController.performTurnOn(startingPoint, endingPoint);
+                    } else if (operation.equals("off")) {
+                        lightsSwitchController.performTurnOff(startingPoint, endingPoint);
+                        lightsBrightnessController.performTurnOff(startingPoint, endingPoint);
+                    }
+                    break;
+                case "toggle":
+                    lightsSwitchController.performToggle(startingPoint, endingPoint);
+                    lightsBrightnessController.performToggle(startingPoint, endingPoint);
+                    break;
             }
         }
         
-        finalLightning.calculateTotalLightsTurnedOn(lights.getLightGrids());
-        //lightningWithBrightness.calculateTotalBrightness(lights.getLightGrids());
+        lightGrid.calculateTotalLightsTurnedOn();
+        lightGrid1.calculateTotalBrightness();
     }
 }
